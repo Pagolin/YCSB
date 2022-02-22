@@ -186,6 +186,7 @@ LICENSE file.
     <module>maprdb</module>
     <module>maprjsondb</module>
     <module>memcached</module>
+    <module>ohua</module>
     <module>mongodb</module>
     <module>nosqldb</module>
     <module>orientdb</module>
