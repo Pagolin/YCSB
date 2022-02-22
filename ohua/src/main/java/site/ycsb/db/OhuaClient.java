@@ -39,7 +39,7 @@ public class OhuaClient extends DB {
   private final Logger logger = Logger.getLogger(getClass());
 
   public static final String ADDRESS = "localhost";
-  public static final int DEFAULT_PORT = 8080;
+  public static final int DEFAULT_PORT = 12943;
 
   @Override
   public Status read(
@@ -64,11 +64,12 @@ public class OhuaClient extends DB {
 
       // retrieve response
       InputStream input = sock.getInputStream();
-      response = (JsonObject) Jsoner.deserialize(Arrays.toString(input.readAllBytes()));
+      response = (JsonObject) Jsoner.deserialize(new String(input.readAllBytes()));
 
       sock.close();
     } catch (Exception e) {
       System.err.println("Error encountered for key: " + key + " " + e);
+      e.printStackTrace();
       logger.error("Error encountered for key: " + key, e);
       return Status.ERROR;
     }
