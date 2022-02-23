@@ -120,6 +120,14 @@ public class OhuaClient extends DB {
       OutputStream output = sock.getOutputStream();
       output.write(Jsoner.serialize(req).getBytes());
 
+      // retrieve response
+      InputStream input = sock.getInputStream();
+      String s = new String(input.readAllBytes());
+      if (s.compareTo("OK") != 0) {
+        System.out.println(s);
+        return Status.ERROR;
+      }
+
       sock.close();
     } catch (Exception e) {
       System.err.println("Error encountered for key: " + key + " " + e);
@@ -152,6 +160,14 @@ public class OhuaClient extends DB {
       OutputStream output = sock.getOutputStream();
       output.write(Jsoner.serialize(req).getBytes());
 
+      // retrieve response
+      InputStream input = sock.getInputStream();
+      String s = new String(input.readAllBytes());
+      if (s.compareTo("OK") != 0) {
+        System.out.println(s);
+        return Status.ERROR;
+      }
+
       sock.close();
     } catch (Exception e) {
       System.err.println("Error encountered for key: " + key + " " + e);
@@ -179,6 +195,14 @@ public class OhuaClient extends DB {
       // send data
       OutputStream output = sock.getOutputStream();
       output.write(Jsoner.serialize(req).getBytes());
+
+      // retrieve response
+      InputStream input = sock.getInputStream();
+      String s = new String(input.readAllBytes());
+      if (s.compareTo("OK") != 0) {
+        System.out.println(s);
+        return Status.ERROR;
+      }
 
       sock.close();
     } catch (Exception e) {
