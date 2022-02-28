@@ -101,3 +101,59 @@ do
 done
 
 
+####################### Workload D ###################################
+###############################################################################
+###############################################################################
+###############################################################################
+###############################################################################
+for tc in {1..12}
+do
+    echo -n "Running workload D ($tc threads)"
+    for it in {1..30}
+    do
+        # spin up the stm store
+        cd ../ycsb-kv-store/
+        cargo run --quiet --release --bin stm-kv-store -- $tc > /dev/null &
+        KVPID="$!"
+        cd ../YCSB/
+        
+        #echo "Loading test data"
+        bin/ycsb load ohua -P workloads/workloada > /dev/null 2>&1
+        
+        #echo "Running measurements"
+        mkdir -p results/stm/d/$tc
+        echo -n "."
+        bin/ycsb run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/stm/d/$tc/$it.txt 2> /dev/null
+        
+        kill $KVPID
+    done
+done
+
+
+
+###############################################################################
+for tc in {1..12}
+do
+    echo -n "Running workload D ($tc threads)"
+    for it in {1..30}
+    do
+        # spin up the stm store
+        cd ../ycsb-kv-store/
+        sed -i "s/THREADCOUNT: usize = [0-9]\+/THREADCOUNT: usize = $tc/" ohua/src/generated.rs
+        cargo run --quiet --release --bin ohua-kv-store > /dev/null &
+        KVPID="$!"
+        cd ../YCSB/
+        
+        #echo "Loading test data"
+        bin/ycsb load ohua -P workloads/workloada > /dev/null 2>&1
+        
+        #echo "Running measurements"
+        mkdir -p results/ohua/d/$tc
+        echo -n "."
+        bin/ycsb run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/ohua/d/$tc/$it.txt 2> /dev/null
+        
+        kill $KVPID
+    done
+done
+
+
