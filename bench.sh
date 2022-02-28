@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 declare -a wls=("a" "b" "c" "f")
 #declare -a stores=("seq-kv-store" "stm-kv-store" "ohua-kv-store")
-YCSB_THREADCOUNT
+YCSB_THREADCOUNT=8
 
 
 #echo "Running the KV Store benchmark against the currently running store."
@@ -19,7 +21,7 @@ KVPID="$!"
 cd ../YCSB/
 
 echo "Loading test data"
-bin/ycsb load ohua -P workloads/workloada > /dev/null
+bin/ycsb load ohua -P workloads/workloada > /dev/null 2>&1
 
 echo "Running measurements"
 for wl in "${wls[@]}"
@@ -29,7 +31,7 @@ do
     for it in {1..30}
     do
         echo -n "."
-        bin/ycsb run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/$kvname/$wl/$it.txt
+        bin/ycsb run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/$kvname/$wl/$it.txt 2> /dev/null
     done
     echo " done!"
 done
@@ -48,7 +50,7 @@ do
     cd ../YCSB/
     
     echo "Loading test data"
-    bin/ycsb load ohua -P workloads/workloada > /dev/null
+    bin/ycsb load ohua -P workloads/workloada > /dev/null 2>&1
     
     echo "Running measurements"
     for wl in "${wls[@]}"
@@ -58,7 +60,7 @@ do
         for it in {1..30}
         do
             echo -n "."
-            bin/ycsb run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/stm/$wl/$tc/$it.txt
+            bin/ycsb run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/stm/$wl/$tc/$it.txt 2> /dev/null
         done
         echo " done!"
     done
@@ -80,7 +82,7 @@ do
     cd ../YCSB/
     
     echo "Loading test data"
-    bin/ycsb load ohua -P workloads/workloada > /dev/null
+    bin/ycsb load ohua -P workloads/workloada > /dev/null 2>&1
     
     echo "Running measurements"
     for wl in "${wls[@]}"
@@ -90,7 +92,7 @@ do
         for it in {1..30}
         do
             echo -n "."
-            bin/ycsb run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/ohua/$wl/$tc/$it.txt
+            bin/ycsb run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/ohua/$wl/$tc/$it.txt 2> /dev/null
         done
         echo " done!"
     done
