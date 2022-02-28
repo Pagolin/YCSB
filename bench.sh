@@ -31,7 +31,7 @@ do
     for it in {1..30}
     do
         echo -n "."
-        bin/ycsb run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/$kvname/$wl/$it.txt 2> /dev/null
+        bin/ycsb run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/seq/$wl/$it.txt 2> /dev/null
     done
     echo " done!"
 done
