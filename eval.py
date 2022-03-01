@@ -35,6 +35,7 @@ def parse_file(fpath):
 
 def main(argv):
     all_results = []
+    seq_results = []
     i = 0
     # iterate through directories
     for entry in os.scandir(argv[1]):
@@ -45,23 +46,35 @@ def main(argv):
             if entry_flow.is_file():
                 continue
             workflow = entry_flow.name
-            for entry_tp in os.scandir(entry_flow):
-                if entry_tp.is_file():
-                    continue
-                throughput = entry_tp.name
-                for f in os.scandir(entry_tp):
-                    if f.is_file():
-                        i += 1
-                        parsed = parse_file(f)
-                        parsed["throughput"] = throughput
-                        parsed["workflow"] = workflow
-                        parsed["framework"] = framework
-                        parsed["run"] = f.name.split('.')[0]
-                        all_results.append(parsed)
+            if framework == "seq":
+                for entry_tp in os.scandir(entry_flow):
+                    if not entry_tp.is_file():
+                        continue
+                    i += 1
+                    parsed = parse_file(entry_tp)
+                    parsed["threads"] = 1
+                    parsed["workflow"] = workflow
+                    parsed["framework"] = framework
+                    parsed["run"] = f.name.split('.')[0]
+                    seq_results.append(parsed)
+            else:
+                for entry_tp in os.scandir(entry_flow):
+                    if entry_tp.is_file():
+                        continue
+                    threads = entry_tp.name
+                    for f in os.scandir(entry_tp):
+                        if f.is_file():
+                            i += 1
+                            parsed = parse_file(f)
+                            parsed["threads"] = threads
+                            parsed["workflow"] = workflow
+                            parsed["framework"] = framework
+                            parsed["run"] = f.name.split('.')[0]
+                            all_results.append(parsed)
     print("Parsed {} files.".format(i))
     
     # prepare order of csv fields
-    fieldnames = ["framework", "workflow", "throughput", "run", "actual_throughput"]
+    fieldnames = ["framework", "workflow", "threads", "run", "actual_throughput"]
     for t in types:
         for (s, _) in strings:
             fieldnames.append(s.format(t))
@@ -72,6 +85,12 @@ def main(argv):
 
         writer.writeheader()
         writer.writerows(all_results)
+
+    with open(argv[3], 'w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+
+        writer.writeheader()
+        writer.writerows(seq_results)
 
 
 if __name__ == '__main__':
