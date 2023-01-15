@@ -8,14 +8,16 @@ declare -a wls=("a" "b" "c")
 #declare -a stores=("seq-kv-store" "stm-kv-store" "ohua-kv-store")
 #YCSB_THREADCOUNT=10
 #YCSB_THREADCOUNT=8
-YCSB_THREADCOUNT=50
-RUNS=10
+YCSB_THREADCOUNT=1
+RUNS=1
 #THREADS=$(seq 1 10)
-THREADS=$(seq 2 2 10)
+#THREADS=$(seq 2 2 10)
+# While I can't compile, there's no point in having threads
+THREADS=$(seq 1)
 #THREADS=$(seq 1 9 10)
 
 
-#echo "Running the KV Store benchmark against the currently running store."
+echo "Running the modified kv-store against the original example from smoltcp"
 #echo "Enter the name of the store (for folder creation purposes):"
 #read kvname
 
@@ -162,11 +164,12 @@ for tc in ${THREADS[@]}
 do
     # spin up the stm store
     echo "Spinning up naive stm kv store ($tc threads)"
-    cd ../ycsb-kv-store/
-    cargo build --quiet --release --bin stm-kv-store --features "naive" > /dev/null
-    cargo run --quiet --release --bin stm-kv-store --features "naive" -- $tc > /dev/null &
+    cd ../smoltcp/k-v-original
+    # build and throw away the output
+    cargo build --quiet --release --bin k-v-original  > /dev/null
+    cargo run --quiet --release --bin k-v-original > /dev/null &
     KVPID="$!"
-    cd ../YCSB/
+    cd ../../YCSB/
 
     sleep 5
     
@@ -177,11 +180,11 @@ do
     for wl in "${wls[@]}"
     do
         echo -n " - ($wl) "
-        mkdir -p results/stm-naive/$wl/$tc
+        mkdir -p results/k-v-original/$wl/$tc
         for it in $(seq 1 $RUNS)
         do
             echo -n "."
-            bin/ycsb.sh run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/stm-naive/$wl/$tc/$it.txt 2> /dev/null
+            bin/ycsb.sh run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/k-v-original/$wl/$tc/$it.txt 2> /dev/null
         done
         echo " done!"
     done
@@ -194,35 +197,34 @@ done
 for tc in ${THREADS[@]}
 do
     # spin up the stm store
-    echo "Spinning up naive dstm kv store ($tc threads)"
-    cd ../ycsb-kv-store/
-    cargo build --quiet --release --bin dstm-kv-store --features "naive" > /dev/null
-    cargo run --quiet --release --bin dstm-kv-store --features "naive" -- $tc > /dev/null &
+    echo "Spinning up naive stm kv store ($tc threads)"
+    cd ../smoltcp/k-v-Ohua
+    # build and throw away the output
+    cargo build --quiet --release --bin k-v-Ohua  > /dev/null
+    cargo run --quiet --release --bin k-v-Ohua > /dev/null &
     KVPID="$!"
-    cd ../YCSB/
+    cd ../../YCSB/
 
     sleep 5
-    
+
     echo "Loading test data"
     bin/ycsb.sh load ohua -P workloads/workloada -threads 1 > /dev/null 2>&1
-    
+
     echo "Running measurements"
     for wl in "${wls[@]}"
     do
         echo -n " - ($wl) "
-        mkdir -p results/dstm-naive/$wl/$tc
+        mkdir -p results/k-v-Ohua/$wl/$tc
         for it in $(seq 1 $RUNS)
         do
             echo -n "."
-            bin/ycsb.sh run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/dstm-naive/$wl/$tc/$it.txt 2> /dev/null
+            bin/ycsb.sh run ohua -P workloads/workload$wl -threads $YCSB_THREADCOUNT > results/k-v-Ohua/$wl/$tc/$it.txt 2> /dev/null
         done
         echo " done!"
     done
-    
+
     kill $KVPID
 done
-
-
 
 ####################### Workload D ###################################
 ###############################################################################

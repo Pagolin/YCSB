@@ -28,6 +28,7 @@ import site.ycsb.StringByteIterator;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -38,8 +39,10 @@ public class OhuaClient extends DB {
 
   private final Logger logger = Logger.getLogger(getClass());
 
-  public static final String ADDRESS = "localhost";
-  public static final int DEFAULT_PORT = 12943;
+  // smoltcp seems to assume rust based OS and implements loopback entirely
+  // as a rust struct, so I'll provide a tuntap address here
+  public static final InetAddress ADDRESS = "192.168.69.1";
+  public static final int DEFAULT_PORT = 6969;
 
   @Override
   public Status read(
