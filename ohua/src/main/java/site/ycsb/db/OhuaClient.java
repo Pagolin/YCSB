@@ -61,7 +61,7 @@ public class OhuaClient extends DB {
     // send the actual request
     JsonObject response;
     try {
-      InetAddress address = InetAddress.getByName("127.0.0.1"); //InetAddress.getByName("192.168.69.1");
+      InetAddress address = InetAddress.getByName("192.168.69.1"); //InetAddress.getByName("127.0.0.1");
       Socket sock = new Socket(address, DEFAULT_PORT);
       System.err.println("opened socket");
       // send data
@@ -121,7 +121,7 @@ public class OhuaClient extends DB {
 
     // send the actual request
     try {
-      InetAddress address = InetAddress.getByName("127.0.0.1"); //InetAddress.getByName("192.168.69.1");
+      InetAddress address = InetAddress.getByName("192.168.69.1"); //InetAddress.getByName("127.0.0.1");
       Socket sock = new Socket(address, DEFAULT_PORT);
       System.err.println("opened socket update");
       // send data
@@ -163,7 +163,7 @@ public class OhuaClient extends DB {
 
     // send the actual request
     try {
-      InetAddress address = InetAddress.getByName("127.0.0.1"); //InetAddress.getByName("192.168.69.1");
+      InetAddress address = InetAddress.getByName("192.168.69.1"); //InetAddress.getByName("127.0.0.1");
       Socket sock = new Socket(address, DEFAULT_PORT);
       System.err.println("opened socket write ");
       // send data
@@ -203,7 +203,7 @@ public class OhuaClient extends DB {
 
     // send the actual request
     try {
-      InetAddress address = InetAddress.getByName("127.0.0.1"); //InetAddress.getByName("192.168.69.1");
+      InetAddress address = InetAddress.getByName("192.168.69.1"); //InetAddress.getByName("127.0.0.1");
       Socket sock = new Socket(address, DEFAULT_PORT);
       System.err.println("opened socket delete");
       // send data
