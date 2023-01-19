@@ -312,6 +312,7 @@ public final class Client {
         workload, tracer, completeLatch);
 
     if (status) {
+      System.err.println("status was true");
       boolean standardstatus = false;
       if (props.getProperty(Measurements.MEASUREMENT_TYPE_PROPERTY, "").compareTo("timeseries") == 0) {
         standardstatus = true;
@@ -335,42 +336,52 @@ public final class Client {
       for (ClientThread client : clients) {
         threads.put(new Thread(tracer.wrap(client, "ClientThread")), client);
       }
+      System.err.println("Threads been put");
 
       st = System.currentTimeMillis();
 
       for (Thread t : threads.keySet()) {
         t.start();
       }
+      System.err.println("Threads been started");
 
       if (maxExecutionTime > 0) {
+        System.err.println("Terminator should be");
         terminator = new TerminatorThread(maxExecutionTime, threads.keySet(), workload);
         terminator.start();
+        System.err.println("Terminator been started");
       }
 
       opsDone = 0;
 
       for (Map.Entry<Thread, ClientThread> entry : threads.entrySet()) {
+        System.err.println("Thread should be joined");
         try {
           entry.getKey().join();
           opsDone += entry.getValue().getOpsDone();
         } catch (InterruptedException ignored) {
           // ignored
         }
+        System.err.println("Thread joined");
       }
 
       en = System.currentTimeMillis();
     }
 
     try {
+      System.err.println("Trying something");
       try (final TraceScope span = tracer.newScope(CLIENT_CLEANUP_SPAN)) {
 
         if (terminator != null && !terminator.isInterrupted()) {
+          System.err.println("Terminator should be interrupted");
           terminator.interrupt();
         }
 
         if (status) {
           // wake up status thread if it's asleep
+          System.err.println("Status should be interupted");
           statusthread.interrupt();
+          System.err.println("Status is interupted");
           // at this point we assume all the monitored threads are already gone as per above join loop.
           try {
             statusthread.join();
@@ -378,8 +389,9 @@ public final class Client {
             // ignored
           }
         }
-
+        System.err.println("Should cleanup workload");
         workload.cleanup();
+        System.err.println("Cleaned up workload");
       }
     } catch (WorkloadException e) {
       e.printStackTrace();

@@ -166,15 +166,15 @@ do
     echo "Spinning up naive stm kv store ($tc threads)"
     cd ../smoltcp/k-v-original
     # build and throw away the output
-    cargo build --quiet --release --bin k-v-original  > /dev/null
-    cargo run --quiet --release --bin k-v-original > /dev/null &
-    KVPID="$!"
+    # cargo build --quiet --release --bin k-v-original  > /dev/null
+    # cargo run --quiet --release --bin k-v-original > /dev/null &
+    # KVPID="$!"
     cd ../../YCSB/
 
     sleep 5
     
     echo "Loading test data"
-    bin/ycsb.sh load ohua -P workloads/workloada -threads 1 > /dev/null 2>&1
+    bin/ycsb.sh load ohua -P workloads/workloada -threads 1 # > /dev/null 2>&1
     
     echo "Running measurements"
     for wl in "${wls[@]}"

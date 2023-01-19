@@ -40,8 +40,9 @@ public class OhuaClient extends DB {
   private final Logger logger = Logger.getLogger(getClass());
 
   // smoltcp seems to assume rust based OS and implements loopback entirely
-  // as a rust struct, so I'll provide a tuntap address here
-  public static final InetAddress ADDRESS = "192.168.69.1";
+  // as a rust struct, so I'll provide a tuntap address here. Also getting host by IP
+  // might throw so I moved it interim wise into the try blocks
+  // public static final InetAddress address = InetAddress.getByNa("192.168.69.1");
   public static final int DEFAULT_PORT = 6969;
 
   @Override
@@ -60,7 +61,9 @@ public class OhuaClient extends DB {
     // send the actual request
     JsonObject response;
     try {
-      Socket sock = new Socket(ADDRESS, DEFAULT_PORT);
+      InetAddress address = InetAddress.getByName("127.0.0.1"); //InetAddress.getByName("192.168.69.1");
+      Socket sock = new Socket(address, DEFAULT_PORT);
+      System.err.println("opened socket");
       // send data
       OutputStream output = sock.getOutputStream();
       output.write(Jsoner.serialize(req).getBytes());
@@ -118,7 +121,9 @@ public class OhuaClient extends DB {
 
     // send the actual request
     try {
-      Socket sock = new Socket(ADDRESS, DEFAULT_PORT);
+      InetAddress address = InetAddress.getByName("127.0.0.1"); //InetAddress.getByName("192.168.69.1");
+      Socket sock = new Socket(address, DEFAULT_PORT);
+      System.err.println("opened socket update");
       // send data
       OutputStream output = sock.getOutputStream();
       output.write(Jsoner.serialize(req).getBytes());
@@ -158,14 +163,18 @@ public class OhuaClient extends DB {
 
     // send the actual request
     try {
-      Socket sock = new Socket(ADDRESS, DEFAULT_PORT);
+      InetAddress address = InetAddress.getByName("127.0.0.1"); //InetAddress.getByName("192.168.69.1");
+      Socket sock = new Socket(address, DEFAULT_PORT);
+      System.err.println("opened socket write ");
       // send data
       OutputStream output = sock.getOutputStream();
       output.write(Jsoner.serialize(req).getBytes());
+      System.err.println("wrote to socket write ");
 
       // retrieve response
       InputStream input = sock.getInputStream();
       String s = new String(input.readAllBytes());
+      System.err.println("Got input");
       if (s.compareTo("OK") != 0) {
         System.out.println(s);
         return Status.ERROR;
@@ -194,7 +203,9 @@ public class OhuaClient extends DB {
 
     // send the actual request
     try {
-      Socket sock = new Socket(ADDRESS, DEFAULT_PORT);
+      InetAddress address = InetAddress.getByName("127.0.0.1"); //InetAddress.getByName("192.168.69.1");
+      Socket sock = new Socket(address, DEFAULT_PORT);
+      System.err.println("opened socket delete");
       // send data
       OutputStream output = sock.getOutputStream();
       output.write(Jsoner.serialize(req).getBytes());
