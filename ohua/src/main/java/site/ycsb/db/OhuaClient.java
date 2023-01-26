@@ -63,20 +63,23 @@ public class OhuaClient extends DB {
     try {
       InetAddress address = InetAddress.getByName("192.168.69.1"); //InetAddress.getByName("127.0.0.1");
       Socket sock = new Socket(address, DEFAULT_PORT);
-      System.err.println("opened socket");
+      System.err.println("opened socket read");
       // send data
       OutputStream output = sock.getOutputStream();
       output.write(Jsoner.serialize(req).getBytes());
 
       // retrieve response
       InputStream input = sock.getInputStream();
-      response = (JsonObject) Jsoner.deserialize(new String(input.readAllBytes()));
-
+      byte[] responseBuffer = new byte[2];  
+      //int num = input.readNBytes(responseBuffer, 0, 2);
+      String resultString = new String(input.readAllBytes());
+      System.err.println("Got input");
+      response = (JsonObject) Jsoner.deserialize(resultString);
       sock.close();
+
     } catch (Exception e) {
       System.err.println("Error encountered for key: " + key + " " + e);
-      e.printStackTrace();
-      logger.error("Error encountered for key: " + key, e);
+      //logger.error("Error encountered for key: " + key, e);
       return Status.ERROR;
     }
 
@@ -130,7 +133,10 @@ public class OhuaClient extends DB {
 
       // retrieve response
       InputStream input = sock.getInputStream();
+      byte[] result = new byte[2];  
+      //int num = input.readNBytes(result, 0, 2);
       String s = new String(input.readAllBytes());
+      System.err.println("Got input");
       if (s.compareTo("OK") != 0) {
         System.out.println(s);
         return Status.ERROR;
@@ -139,7 +145,7 @@ public class OhuaClient extends DB {
       sock.close();
     } catch (Exception e) {
       System.err.println("Error encountered for key: " + key + " " + e);
-      logger.error("Error encountered for key: " + key, e);
+      //logger.error("Error encountered for key: " + key, e);
       return Status.ERROR;
     }
 
@@ -173,6 +179,8 @@ public class OhuaClient extends DB {
 
       // retrieve response
       InputStream input = sock.getInputStream();
+      byte[] result = new byte[2];  
+      //int num = input.readNBytes(result, 0, 2);
       String s = new String(input.readAllBytes());
       System.err.println("Got input");
       if (s.compareTo("OK") != 0) {
@@ -183,7 +191,7 @@ public class OhuaClient extends DB {
       sock.close();
     } catch (Exception e) {
       System.err.println("Error encountered for key: " + key + " " + e);
-      logger.error("Error encountered for key: " + key, e);
+      //logger.error("Error encountered for key: " + key, e);
       return Status.ERROR;
     }
 
@@ -212,7 +220,10 @@ public class OhuaClient extends DB {
 
       // retrieve response
       InputStream input = sock.getInputStream();
+      byte[] result = new byte[2];  
+      //int num = input.readNBytes(result, 0, 2);
       String s = new String(input.readAllBytes());
+      System.err.println("Got input");
       if (s.compareTo("OK") != 0) {
         System.out.println(s);
         return Status.ERROR;
@@ -221,7 +232,7 @@ public class OhuaClient extends DB {
       sock.close();
     } catch (Exception e) {
       System.err.println("Error encountered for key: " + key + " " + e);
-      logger.error("Error encountered for key: " + key, e);
+      //logger.error("Error encountered for key: " + key, e);
       return Status.ERROR;
     }
 
