@@ -22,6 +22,7 @@ import com.github.cliftonlabs.json_simple.Jsoner;
 import org.apache.log4j.Logger;
 import site.ycsb.ByteIterator;
 import site.ycsb.DB;
+import site.ycsb.DBException;
 import site.ycsb.Status;
 import site.ycsb.StringByteIterator;
 
@@ -33,17 +34,45 @@ import java.text.MessageFormat;
 import java.util.*;
 
 /**
- * Concrete Memcached client implementation.
+ * Concrete client implementation.
  */
 public class OhuaClient extends DB {
 
   private final Logger logger = Logger.getLogger(getClass());
 
-  // smoltcp seems to assume rust based OS and implements loopback entirely
+  // smoltcp seems to assume rust based OS and implements loopback entirely.
   // as a rust struct, so I'll provide a tuntap address here. Also getting host by IP
-  // might throw so I moved it interim wise into the try blocks
-  // public static final InetAddress address = InetAddress.getByNa("192.168.69.1");
+  // might throw so I moved it interim wise into the try blocks.
   public static final int DEFAULT_PORT = 6969;
+  private static InetAddress serverIP;
+  private static Socket socket;
+  // Closing an InputStream closes the socket.
+  // As I also can not open just a bunch of them I'll need to keep
+  // both I think.
+  private static InputStream inputStream;
+
+  @Override
+  public void init() throws DBException{
+    try {
+      serverIP = InetAddress.getByName("192.168.69.1");
+      socket = new Socket(serverIP, DEFAULT_PORT);
+      inputStream = socket.getInputStream();
+    } catch (Exception e) {
+      System.out.println("Establishing Socket failed");
+      throw new DBException("Can not establish connection");
+    }
+  }
+
+  @Override 
+  public void cleanup() throws DBException {
+    try {
+      socket.close();
+    } catch (Exception e) {
+      System.out.println("Closing Socket failed");
+      throw new DBException("Can not close connection");
+    }
+    
+  }
 
   @Override
   public Status read(
@@ -61,29 +90,31 @@ public class OhuaClient extends DB {
     // send the actual request
     JsonObject response;
     try {
-      InetAddress address = InetAddress.getByName("192.168.69.1"); //InetAddress.getByName("127.0.0.1");
-      Socket sock = new Socket(address, DEFAULT_PORT);
-      System.err.println("opened socket read");
       // send data
-      OutputStream output = sock.getOutputStream();
+  
+      OutputStream output = socket.getOutputStream();
       output.write(Jsoner.serialize(req).getBytes());
 
       // retrieve response
-      InputStream input = sock.getInputStream();
+      //InputStream input = sock.getInputStream();
       byte[] responseBuffer = new byte[2];  
-      //int num = input.readNBytes(responseBuffer, 0, 2);
-      String resultString = new String(input.readAllBytes());
-      System.err.println("Got input");
-      response = (JsonObject) Jsoner.deserialize(resultString);
-      sock.close();
+      int num = inputStream.readNBytes(responseBuffer, 0, 2);
+      String resultString = new String(responseBuffer);
+      //System.err.println("Got input read");
+      //response = (JsonObject) Jsoner.deserialize(resultString);
+      // ! For now just check if we received OK
+      if (resultString.compareTo("OK") != 0) {
+        System.out.println(resultString);
+        return Status.ERROR;
+      }
 
     } catch (Exception e) {
       System.err.println("Error encountered for key: " + key + " " + e);
-      //logger.error("Error encountered for key: " + key, e);
       return Status.ERROR;
     }
 
     // parse response
+    /*
     boolean checkFields = fields != null && !fields.isEmpty();
     Map<String, String> entries = (Map<String, String>) response.get("value");
     for (Map.Entry<String, String> item: entries.entrySet()) {
@@ -95,7 +126,8 @@ public class OhuaClient extends DB {
       if (val != null) {
         result.put(item.getKey(), new StringByteIterator(val));
       }
-    }
+    }*/
+
 
     return Status.OK;
   }
@@ -124,25 +156,21 @@ public class OhuaClient extends DB {
 
     // send the actual request
     try {
-      InetAddress address = InetAddress.getByName("192.168.69.1"); //InetAddress.getByName("127.0.0.1");
-      Socket sock = new Socket(address, DEFAULT_PORT);
-      System.err.println("opened socket update");
       // send data
-      OutputStream output = sock.getOutputStream();
+      OutputStream output = socket.getOutputStream();
       output.write(Jsoner.serialize(req).getBytes());
+      output.flush();
 
       // retrieve response
-      InputStream input = sock.getInputStream();
       byte[] result = new byte[2];  
-      //int num = input.readNBytes(result, 0, 2);
-      String s = new String(input.readAllBytes());
-      System.err.println("Got input");
+      int num = inputStream.readNBytes(result, 0, 2);
+      String s = new String(result);
+      //System.err.println("Got input update");
       if (s.compareTo("OK") != 0) {
-        System.out.println(s);
+        //System.out.println(s);
         return Status.ERROR;
       }
-
-      sock.close();
+      //sock.close();      
     } catch (Exception e) {
       System.err.println("Error encountered for key: " + key + " " + e);
       //logger.error("Error encountered for key: " + key, e);
@@ -169,32 +197,28 @@ public class OhuaClient extends DB {
 
     // send the actual request
     try {
-      InetAddress address = InetAddress.getByName("192.168.69.1"); //InetAddress.getByName("127.0.0.1");
-      Socket sock = new Socket(address, DEFAULT_PORT);
-      System.err.println("opened socket write ");
       // send data
-      OutputStream output = sock.getOutputStream();
+      OutputStream output = socket.getOutputStream();
       output.write(Jsoner.serialize(req).getBytes());
-      System.err.println("wrote to socket write ");
+      output.flush();
+      //System.err.println("wrote to socket write ");
 
       // retrieve response
-      InputStream input = sock.getInputStream();
       byte[] result = new byte[2];  
-      //int num = input.readNBytes(result, 0, 2);
-      String s = new String(input.readAllBytes());
-      System.err.println("Got input");
+      int num = inputStream.readNBytes(result, 0, 2);
+      String s = new String(result);
+      //System.err.println("Got input insert");
       if (s.compareTo("OK") != 0) {
         System.out.println(s);
         return Status.ERROR;
-      }
-
-      sock.close();
+      } 
+      //sock.close();     
     } catch (Exception e) {
       System.err.println("Error encountered for key: " + key + " " + e);
       //logger.error("Error encountered for key: " + key, e);
       return Status.ERROR;
     }
-
+    
     return Status.OK;
   }
 
@@ -210,32 +234,25 @@ public class OhuaClient extends DB {
     req.put("Delete", obj);
 
     // send the actual request
-    try {
-      InetAddress address = InetAddress.getByName("192.168.69.1"); //InetAddress.getByName("127.0.0.1");
-      Socket sock = new Socket(address, DEFAULT_PORT);
-      System.err.println("opened socket delete");
+    try { 
       // send data
-      OutputStream output = sock.getOutputStream();
+      OutputStream output = socket.getOutputStream();
       output.write(Jsoner.serialize(req).getBytes());
+      output.flush();
 
       // retrieve response
-      InputStream input = sock.getInputStream();
       byte[] result = new byte[2];  
-      //int num = input.readNBytes(result, 0, 2);
-      String s = new String(input.readAllBytes());
-      System.err.println("Got input");
+      int num = inputStream.readNBytes(result, 0, 2);
+      String s = new String(result);
+      //System.err.println("Got input delete");
       if (s.compareTo("OK") != 0) {
         System.out.println(s);
         return Status.ERROR;
       }
-
-      sock.close();
     } catch (Exception e) {
       System.err.println("Error encountered for key: " + key + " " + e);
-      //logger.error("Error encountered for key: " + key, e);
       return Status.ERROR;
     }
-
     return Status.OK;
   }
 

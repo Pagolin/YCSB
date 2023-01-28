@@ -16,6 +16,6 @@
  */
 
 /**
- * YCSB binding for memcached.
+ * YCSB binding for an Ohua application driven key-value store.
  */
 package site.ycsb.db;

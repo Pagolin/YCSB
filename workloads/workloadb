@@ -22,13 +22,13 @@
 #   Request distribution: zipfian
 
 recordcount=10000
-operationcount=30000
+operationcount=15000
 workload=site.ycsb.workloads.CoreWorkload
 
 readallfields=true
 
-readproportion=0.95
-updateproportion=0.05
+readproportion=1
+updateproportion=0
 scanproportion=0
 insertproportion=0
 
